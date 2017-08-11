@@ -17,11 +17,12 @@ server.listen(8080, function listening() {
 });
 
 class Tank {
-  constructor(args){
+  constructor(id){
+    this.id = id;
     this.bullets = [];
     this.angle = 0;
     this.x = Math.floor(Math.random() * BOARD_WIDTH);
-    this.x = Math.floor(Math.random() * BOARD_LENGTH);
+    this.y = Math.floor(Math.random() * BOARD_LENGTH);
   }
 
   shoot(){
@@ -30,7 +31,8 @@ class Tank {
 
   move(){
     this.x += Math.cos(this.angle) * TANK_SPEED;
-    this.x += Math.sin(this.angle) * TANK_SPEED;
+    this.y += Math.sin(this.angle) * TANK_SPEED;
+    
   }
 
   rotate(angle){
@@ -44,20 +46,12 @@ class Game {
   }
 
   joinTank(tank){
-    this.tanks.push(new Tank());
+    this.tanks.push(new Tank(tanks.length));
   }
 
   leaveTank(tankID){
     this.tanks = this.tanks.splice(tankID, 1);
   }
-
-  syncBullets(){
-
-  }
-  syncTanks(){
-    
-  }
-
 
 }
 
@@ -66,6 +60,7 @@ class Bullet {
     this.angle = angle;
     this.x = x;
     this.y = y;
+    move();
   }
   move(){
     this.x += Math.cos(angle) * BULLET_SPEED;
@@ -74,12 +69,13 @@ class Bullet {
 }
 
 var game = new Game();
-game.joinTank();
-
 
 wss.on('connection', function connection(ws, req) {
   console.log('A player has connected.');
   game.joinTank();
-
-
+  wss.clients.forEac(function each(client){
+    if(client !== ws && client.readyState === WebSocket.OPEN) {
+      client.send(game.tanks);
+    }
+  });
 });
