@@ -26,7 +26,7 @@ function joinTank(tank){
 }
 
 function leaveTank(tankID){
-  this.tanks = this.tanks.splice(tankID, 1);
+  tanks.splice(tankID, 1);
 }
 
 
@@ -149,6 +149,7 @@ wss.on('connection', function connection(ws, req) {
 
   ws.on('close', function close() {
     connections.splice(connections.indexOf(ws), 1);
+    leaveTank(connections.indexOf(ws), 1);
     wss.clients.forEach(function each(client){
         client.send(JSON.stringify([0,tanks]));
     });
