@@ -76,7 +76,7 @@ class Tank {
       this.x = newX;
       this.y = newY;
       for(var x = 0, n = connections.length; x < n; x++){
-        connections[x].send(JSON.stringify([1, [this.id, this.x, this.y, this.angle]]));
+        connections[x].send(JSON.stringify([1, [this.id, this.x, this.y]]));
       }
     }
 
@@ -92,7 +92,7 @@ class Tank {
     }
 
     for(var x = 0, n = connections.length; x < n; x++){
-        connections[x].send(JSON.stringify([2, [this.id, this.x, this.y, this.angle]]));
+        connections[x].send(JSON.stringify([2, [this.id, this.angle]]));
     }
   }
 }
