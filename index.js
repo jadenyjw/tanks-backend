@@ -4,6 +4,7 @@ const BOARD_WIDTH = 800;
 const BOARD_LENGTH = 800;
 const TANK_SPEED = 5;
 const TANK_SIZE = 20;
+const ROTATION_SPEED = 4;
 //Define variables for web server.
 const express = require('express');
 const http = require('http');
@@ -18,6 +19,7 @@ server.listen(8080, function listening() {
 });
 
 tanks = [];
+connections = [];
 
 function joinTank(tank){
   tanks.push(new Tank(this.tanks.length));
@@ -26,11 +28,6 @@ function joinTank(tank){
 function leaveTank(tankID){
   this.tanks = this.tanks.splice(tankID, 1);
 }
-
-function getTank(connection){
-
-}
-
 
 
 class Tank {
@@ -45,13 +42,23 @@ class Tank {
   shoot(){
     var bullet = new Bullet(this.angle, this.x, this.y, this.bullets.length, this.id);
     this.bullets.push(bullet);
+    for(var x = 0, n = connections.length; x < n; x++){
+        connections[x].send(JSON.stringify([0, [this.id]]));
+    }
     bullet.move();
   }
 
-  move(){
+  move(direction){
 
-    var newX = Math.cos(this.angle) * TANK_SPEED;
-    var newY = Math.sin(this.angle) * TANK_SPEED;
+    if(direction == 1){
+      var newX = this.x + Math.cos(this.angle) * TANK_SPEED;
+      var newY = this.y + Math.sin(this.angle) * TANK_SPEED;
+    }
+    else if(direction == 0){
+      var newX = this.x - Math.cos(this.angle) * TANK_SPEED;
+      var newY = this.y - Math.sin(this.angle) * TANK_SPEED;
+    }
+
 
     var willCrash = false;
     for(var i = 0, n = tanks.length; i < n; i++){
@@ -68,12 +75,25 @@ class Tank {
     if(!willCrash){
       this.x = newX;
       this.y = newY;
+      for(var x = 0, n = connections.length; x < n; x++){
+        connections[x].send(JSON.stringify([1, [this.id, this.x, this.y, this.angle]]));
+      }
     }
 
   }
 
-  rotate(angle){
-    this.angle = (this.angle + angle) % 360;
+  rotate(direction){
+
+    if(direction == 1){
+      this.angle = (this.angle + ROTATION_SPEED) % 360;
+    }
+    else if (direction == 0){
+      this.angle = (this.angle - ROTATION_SPEED) % 360;
+    }
+
+    for(var x = 0, n = connections.length; x < n; x++){
+        connections[x].send(JSON.stringify([2, [this.id, this.x, this.y, this.angle]]));
+    }
   }
 }
 
@@ -105,9 +125,13 @@ class Bullet {
   }
 
   move(){
+
     this.x += Math.cos(this.angle) * BULLET_SPEED;
     this.y += Math.sin(this.angle) * BULLET_SPEED;
-    console.log(this.x + " " + this.y);
+
+    for(var x = 0, n = connections.length; x < n; x++){
+      connections[x].send(JSON.stringify([3, [this.x, this.y]]));
+    }
 
     if(!this.check()){
       this.move();
@@ -116,11 +140,36 @@ class Bullet {
 }
 
 wss.on('connection', function connection(ws, req) {
+  connections.push(ws);
   console.log('A player has connected.');
   joinTank();
-  tanks[tanks.length - 1].shoot();
   wss.clients.forEach(function each(client){
-      client.send(JSON.stringify(tanks));
+      client.send(JSON.stringify([0,tanks]));
+  });
+
+  ws.on('close', function close() {
+    connections.splice(connections.indexOf(ws), 1);
+    wss.clients.forEach(function each(client){
+        client.send(JSON.stringify([0,tanks]));
+    });
+    console.log('A player has disconnected.');
+  });
+
+  ws.on('message', function process(data) {
+    var tank = tanks[connections.indexOf(ws)];
+
+    //Tank Shoot
+    if(data[0] == 0){
+      tank.shoot();
+    }
+    //Tank Move
+    else if(data[0] == 1){
+      tank.move(data[2]);
+    }
+    else if (data[0] == 2){
+      tank.rotate(data[2]);
+    }
+
   });
 
 
