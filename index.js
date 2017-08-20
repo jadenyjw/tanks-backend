@@ -149,7 +149,7 @@ wss.on('connection', function connection(ws, req) {
 
   ws.on('close', function close() {
     connections.splice(connections.indexOf(ws), 1);
-    leaveTank(connections.indexOf(ws), 1);
+    leaveTank(connections.indexOf(ws));
     wss.clients.forEach(function each(client){
         client.send(JSON.stringify([0,tanks]));
     });
