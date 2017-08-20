@@ -5,6 +5,7 @@ const BOARD_LENGTH = 800;
 const TANK_SPEED = 5;
 const TANK_SIZE = 20;
 const ROTATION_SPEED = 4;
+const BULLET_TIMEOUT_MS = 500
 //Define variables for web server.
 const express = require('express');
 const http = require('http');
@@ -37,15 +38,24 @@ class Tank {
     this.angle = Math.floor(Math.random() * 360);
     this.x = Math.floor(Math.random() * BOARD_WIDTH);
     this.y = Math.floor(Math.random() * BOARD_LENGTH);
+    this.canShoot = true;
   }
 
+
+
   shoot(){
-    var bullet = new Bullet(this.angle, this.x, this.y, this.bullets.length, this.id);
-    this.bullets.push(bullet);
-    for(var x = 0, n = connections.length; x < n; x++){
-        connections[x].send(JSON.stringify([0, [this.id]]));
+
+    if(this.canShoot){
+      this.canShoot = false;
+      var that = this;
+      setTimeout(function(){that.canShoot = true}, BULLET_TIMEOUT_MS);
+      var bullet = new Bullet(this.angle, this.x, this.y, this.bullets.length, this.id);
+      this.bullets.push(bullet);
+      for(var x = 0, n = connections.length; x < n; x++){
+          connections[x].send(JSON.stringify([0, [this.id]]));
+      }
+      bullet.move();
     }
-    bullet.move();
   }
 
   move(direction){
