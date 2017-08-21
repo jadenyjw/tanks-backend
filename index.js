@@ -153,17 +153,22 @@ wss.on('connection', function connection(ws, req) {
   connections.push(ws);
   console.log('A player has connected.');
   joinTank();
-  wss.clients.forEach(function each(client){
-      client.send(JSON.stringify([0,tanks]));
-  });
+  ws.send(JSON.stringify([0,tanks]));
+  for(var x = 0, n = connections.length; x < n - 1; x++){
+    connections[x].send(JSON.stringify([4, tanks[n - 1]]));
+  }
 
   ws.on('close', function close() {
-    connections.splice(connections.indexOf(ws), 1);
+
+    for(var x = 0, n = connections.length; x < n; x++){
+      if(x != connections.indexOf(ws)){
+        connections[x].send(JSON.stringify([5, connections.indexOf(ws)]));
+      }  
+    }
     leaveTank(connections.indexOf(ws));
-    wss.clients.forEach(function each(client){
-        client.send(JSON.stringify([0,tanks]));
-    });
+    connections.splice(connections.indexOf(ws), 1);
     console.log('A player has disconnected.');
+
   });
 
   ws.on('message', function process(data) {
