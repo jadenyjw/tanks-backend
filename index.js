@@ -63,13 +63,14 @@ class Tank {
 
   move(direction){
 
+    console.log(Math.cos(this.angle) * TANK_SPEED + " " + Math.sin(this.angle) * TANK_SPEED)
     if(direction == 1){
-      var newX = this.x + Math.cos(this.angle) * TANK_SPEED;
-      var newY = this.y + Math.sin(this.angle) * TANK_SPEED;
+      var newX = this.x + Math.cos(this.angle * (Math.PI / 180)) * TANK_SPEED;
+      var newY = this.y + Math.sin(this.angle * (Math.PI / 180)) * TANK_SPEED;
     }
     else if(direction == 0){
-      var newX = this.x - Math.cos(this.angle) * TANK_SPEED;
-      var newY = this.y - Math.sin(this.angle) * TANK_SPEED;
+      var newX = this.x - Math.cos(this.angle * (Math.PI / 180)) * TANK_SPEED;
+      var newY = this.y - Math.sin(this.angle * (Math.PI / 180)) * TANK_SPEED;
     }
 
 
@@ -88,6 +89,7 @@ class Tank {
     if(!willCrash){
       this.x = newX;
       this.y = newY;
+      console.log(this.x + " " + this.y + " " + this.angle);
       for(var x = 0, n = connections.length; x < n; x++){
         connections[x].send(JSON.stringify([1, [this.id, this.x, this.y]]));
       }
@@ -141,8 +143,8 @@ class Bullet {
 
   move(){
 
-    this.x += Math.cos(this.angle) * BULLET_SPEED;
-    this.y += Math.sin(this.angle) * BULLET_SPEED;
+    this.x += Math.cos(this.angle * (Math.PI / 180)) * BULLET_SPEED;
+    this.y += Math.sin(this.angle * (Math.PI / 180)) * BULLET_SPEED;
 
     for(var x = 0, n = connections.length; x < n; x++){
       connections[x].send(JSON.stringify([4, [this.x, this.y]]));
