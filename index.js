@@ -3,7 +3,7 @@ const BULLET_SPEED = 5;
 const BOARD_WIDTH = 800;
 const BOARD_LENGTH = 800;
 const TANK_SPEED = 5;
-const TANK_SIZE = 20;
+const TANK_SIZE = 80;
 const ROTATION_SPEED = 4;
 const BULLET_TIMEOUT_MS = 500
 //Define variables for web server.
@@ -28,6 +28,9 @@ function joinTank(tank){
 
 function leaveTank(tankID){
   tanks.splice(tankID, 1);
+  for(var x = tankID, n = tanks.length; x < n; x++){
+    tanks[x].id = x;
+  }
 }
 
 
@@ -52,7 +55,7 @@ class Tank {
       var bullet = new Bullet(this.angle, this.x, this.y, this.bullets.length, this.id);
       this.bullets.push(bullet);
       for(var x = 0, n = connections.length; x < n; x++){
-          connections[x].send(JSON.stringify([0, [this.id]]));
+          connections[x].send(JSON.stringify([3, [this.id]]));
       }
       bullet.move();
     }
@@ -121,6 +124,8 @@ class Bullet {
     for(var i = 0, n = tanks.length; i < n; i++){
       //Check for collision with other tanks.
       if (Math.abs(this.x - tanks[i].x) <= TANK_SIZE/2 && Math.abs(this.y - tanks[i].y) <= TANK_SIZE/2 && i != this.tankID){
+        console.log(this.tankID);
+        console.log(tanks[this.tankID]);
         tanks[this.tankID].bullets.splice(this.id, 1);
         return true;
       }
@@ -140,7 +145,7 @@ class Bullet {
     this.y += Math.sin(this.angle) * BULLET_SPEED;
 
     for(var x = 0, n = connections.length; x < n; x++){
-      connections[x].send(JSON.stringify([3, [this.x, this.y]]));
+      connections[x].send(JSON.stringify([4, [this.x, this.y]]));
     }
 
     if(!this.check()){
@@ -155,15 +160,15 @@ wss.on('connection', function connection(ws, req) {
   joinTank();
   ws.send(JSON.stringify([0,tanks]));
   for(var x = 0, n = connections.length; x < n - 1; x++){
-    connections[x].send(JSON.stringify([4, tanks[n - 1]]));
+    connections[x].send(JSON.stringify([5, tanks[n - 1]]));
   }
 
   ws.on('close', function close() {
 
     for(var x = 0, n = connections.length; x < n; x++){
       if(x != connections.indexOf(ws)){
-        connections[x].send(JSON.stringify([5, connections.indexOf(ws)]));
-      }  
+        connections[x].send(JSON.stringify([6, connections.indexOf(ws)]));
+      }
     }
     leaveTank(connections.indexOf(ws));
     connections.splice(connections.indexOf(ws), 1);
