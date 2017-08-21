@@ -3,7 +3,7 @@ const BULLET_SPEED = 5;
 const BOARD_WIDTH = 800;
 const BOARD_LENGTH = 800;
 const TANK_SPEED = 5;
-const TANK_SIZE = 80;
+const TANK_SIZE = 128;
 const ROTATION_SPEED = 4;
 const BULLET_TIMEOUT_MS = 500
 //Define variables for web server.
@@ -73,18 +73,18 @@ class Tank {
       var newY = this.y - Math.sin(this.angle * (Math.PI / 180)) * TANK_SPEED;
     }
 
-
     var willCrash = false;
+    /*
     for(var i = 0, n = tanks.length; i < n; i++){
       if(Math.abs(newX - tanks[i].x) <= TANK_SIZE/2 && Math.abs(newY - tanks[i].y) <= TANK_SIZE/2 && i != this.id){
         willCrash = true;
         break;
       }
     }
-
-    if(!willCrash){
+    */
+    //if(!willCrash){
       willCrash = (newX >= BOARD_WIDTH || newX <= 0 || newY >= BOARD_LENGTH || newY <= 0);
-    }
+    //}
 
     if(!willCrash){
       this.x = newX;
