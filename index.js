@@ -60,7 +60,6 @@ class Tank {
       setTimeout(function(){that.canShoot = true}, BULLET_TIMEOUT_MS);
       var bullet = new Bullet(this.angle, this.x, this.y, this.bullets.length, this.id);
       this.bullets.push(bullet);
-      console.log(tanks);
       for(var x = 0, n = connections.length; x < n; x++){
         if(connections[x].readyState == WebSocket.OPEN){
           connections[x].send(JSON.stringify([3, [this.id, bullet.id, this.x, this.y]]));
