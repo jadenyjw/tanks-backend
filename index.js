@@ -131,11 +131,15 @@ class Bullet {
       for(var i = 0, n = tanks.length; i < n; i++){
         //Check for collision with other tanks.
         if (Math.abs(this.x - tanks[i].x) <= TANK_SIZE/2 && Math.abs(this.y - tanks[i].y) <= TANK_SIZE/2 && i != this.tankID){
+          tanks[i].respawn();
           for(var x = 0, n = connections.length; x < n; x++){
             if(connections[x].readyState == WebSocket.OPEN){
+              connections[x].send(JSON.stringify([1, [tanks[i].id, tanks[i].x, tanks[i].y]]));
+              connections[x].send(JSON.stringify([2, [tanks[i].id, tanks[i].angle]]));
               connections[x].send(JSON.stringify([7, [this.tankID, this.id]]));
             }
           }
+          //Check if the shooting tank still exists.
           if(this.tankID < tanks.length){
             tanks[this.tankID].bullets.splice(this.id, 1);
             for(var x = this.id, n = tanks[this.tankID].bullets.length; x < n; x++){
