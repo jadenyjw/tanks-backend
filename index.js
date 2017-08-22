@@ -3,7 +3,7 @@ const BULLET_SPEED = 5;
 const BOARD_WIDTH = 800;
 const BOARD_LENGTH = 800;
 const TANK_SPEED = 5;
-const TANK_SIZE = 128;
+const TANK_SIZE = 64;
 const ROTATION_SPEED = 4;
 const BULLET_TIMEOUT_MS = 500
 //Define variables for web server.
@@ -26,7 +26,13 @@ function joinTank(tank){
   tanks.push(new Tank(this.tanks.length));
 }
 
-function leaveTank(tankID){
+function leaveTank(tankID)
+{
+
+  for(var x = 0, n = tanks[tankID].bullets.length; x < n; x++){
+    tanks[tankID].bullets[x].isDead = true;
+  }
+
   tanks.splice(tankID, 1);
   for(var x = tankID, n = tanks.length; x < n; x++){
     tanks[x].id = x;
@@ -54,16 +60,17 @@ class Tank {
       setTimeout(function(){that.canShoot = true}, BULLET_TIMEOUT_MS);
       var bullet = new Bullet(this.angle, this.x, this.y, this.bullets.length, this.id);
       this.bullets.push(bullet);
+      console.log(tanks);
       for(var x = 0, n = connections.length; x < n; x++){
+        if(connections[x].readyState == WebSocket.OPEN){
           connections[x].send(JSON.stringify([3, [this.id, bullet.id, this.x, this.y]]));
+        }
       }
       bullet.move();
     }
   }
 
   move(direction){
-
-    console.log(Math.cos(this.angle) * TANK_SPEED + " " + Math.sin(this.angle) * TANK_SPEED)
     if(direction == 1){
       var newX = this.x + Math.cos(this.angle * (Math.PI / 180)) * TANK_SPEED;
       var newY = this.y + Math.sin(this.angle * (Math.PI / 180)) * TANK_SPEED;
@@ -73,25 +80,14 @@ class Tank {
       var newY = this.y - Math.sin(this.angle * (Math.PI / 180)) * TANK_SPEED;
     }
 
-    var willCrash = false;
-    /*
-    for(var i = 0, n = tanks.length; i < n; i++){
-      if(Math.abs(newX - tanks[i].x) <= TANK_SIZE/2 && Math.abs(newY - tanks[i].y) <= TANK_SIZE/2 && i != this.id){
-        willCrash = true;
-        break;
-      }
-    }
-    */
-    //if(!willCrash){
-      willCrash = (newX >= BOARD_WIDTH || newX <= 0 || newY >= BOARD_LENGTH || newY <= 0);
-    //}
-
-    if(!willCrash){
+    if(!(newX >= BOARD_WIDTH || newX <= 0 || newY >= BOARD_LENGTH || newY <= 0)){
       this.x = newX;
       this.y = newY;
-      console.log(this.x + " " + this.y + " " + this.angle);
+
       for(var x = 0, n = connections.length; x < n; x++){
-        connections[x].send(JSON.stringify([1, [this.id, this.x, this.y]]));
+        if(connections[x].readyState == WebSocket.OPEN){
+          connections[x].send(JSON.stringify([1, [this.id, this.x, this.y]]));
+        }
       }
     }
 
@@ -107,7 +103,9 @@ class Tank {
     }
 
     for(var x = 0, n = connections.length; x < n; x++){
+      if(connections[x].readyState == WebSocket.OPEN){
         connections[x].send(JSON.stringify([2, [this.id, this.angle]]));
+      }
     }
   }
 
@@ -128,35 +126,45 @@ class Bullet {
     this.y = y;
     this.id = id;
     this.tankID = tankID;
+    this.isDead = false;
   }
   check(){
-    try{
       for(var i = 0, n = tanks.length; i < n; i++){
         //Check for collision with other tanks.
         if (Math.abs(this.x - tanks[i].x) <= TANK_SIZE/2 && Math.abs(this.y - tanks[i].y) <= TANK_SIZE/2 && i != this.tankID){
-          console.log(this.tankID);
-          console.log(tanks[this.tankID]);
-          tanks[this.tankID].bullets.splice(this.id, 1);
-          for(var x = this.id, n = tanks[this.tankID].bullets.length; x < n; x++){
-            tanks[this.tankID].bullets[x].id = x;
+          for(var x = 0, n = connections.length; x < n; x++){
+            if(connections[x].readyState == WebSocket.OPEN){
+              connections[x].send(JSON.stringify([7, [this.tankID, this.id]]));
+            }
           }
+          if(this.tankID < tanks.length){
+            tanks[this.tankID].bullets.splice(this.id, 1);
+            for(var x = this.id, n = tanks[this.tankID].bullets.length; x < n; x++){
+              tanks[this.tankID].bullets[x].id = x;
+            }
+          }
+
+
           return true;
         }
       }
 
-      //Check for edge of board.
       if (this.x > BOARD_WIDTH || this.x < 0 || this.y > BOARD_LENGTH || this.y < 0){
-        tanks[this.tankID].bullets.splice(this.id, 1);
-        for(var x = this.id, n = tanks[this.tankID].bullets.length; x < n; x++){
-          tanks[this.tankID].bullets[x].id = x;
+        for(var x = 0, n = connections.length; x < n; x++){
+          if(connections[x].readyState == WebSocket.OPEN){
+            connections[x].send(JSON.stringify([7, [this.tankID, this.id]]));
+          }
+        }
+        if(this.tankID < tanks.length){
+          tanks[this.tankID].bullets.splice(this.id, 1);
+          for(var x = this.id, n = tanks[this.tankID].bullets.length; x < n; x++){
+            tanks[this.tankID].bullets[x].id = x;
+          }
         }
         return true;
       }
       return false;
-    }
-    catch (e){
 
-    }
 
   }
 
@@ -166,18 +174,17 @@ class Bullet {
     this.y += Math.sin(this.angle * (Math.PI / 180)) * BULLET_SPEED;
 
     for(var x = 0, n = connections.length; x < n; x++){
-      connections[x].send(JSON.stringify([4, [this.tankID, this.id, this.x, this.y]]));
+      if(connections[x].readyState == WebSocket.OPEN){
+        connections[x].send(JSON.stringify([4, [this.tankID, this.id, this.x, this.y]]));
+      }
     }
 
-    if(!this.check()){
+    if(!this.check() && !this.isDead){
       var that = this
       setTimeout(function(){that.move()}, 50)
     }
-    else{
-      for(var x = 0, n = connections.length; x < n - 1; x++){
-        connections[x].send(JSON.stringify([7, [this.tankID, this.id]]));
-      }
-    }
+
+
   }
 
 }
@@ -186,16 +193,24 @@ wss.on('connection', function connection(ws, req) {
   connections.push(ws);
   console.log('A player has connected.');
   joinTank();
-  ws.send(JSON.stringify([0,tanks]));
+  var tmpTanks = tanks;
+
+
+  ws.send(JSON.stringify([0, tanks]));
+
   for(var x = 0, n = connections.length; x < n - 1; x++){
-    connections[x].send(JSON.stringify([5, tanks[n - 1]]));
+    if(connections[x].readyState == WebSocket.OPEN){
+      connections[x].send(JSON.stringify([5, tanks[n - 1]]));
+    }
   }
 
   ws.on('close', function close() {
 
     for(var x = 0, n = connections.length; x < n; x++){
       if(x != connections.indexOf(ws)){
-        connections[x].send(JSON.stringify([6, connections.indexOf(ws)]));
+        if(connections[x].readyState == WebSocket.OPEN){
+          connections[x].send(JSON.stringify([6, connections.indexOf(ws)]));
+        }
       }
     }
     leaveTank(connections.indexOf(ws));
