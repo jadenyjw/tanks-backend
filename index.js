@@ -1,10 +1,10 @@
 //Define constants for the game.
-const BULLET_SPEED = 10;
-const BOARD_WIDTH = 800;
+const BULLET_SPEED = 3;
+const BOARD_WIDTH = 1200;
 const BOARD_LENGTH = 800;
-const TANK_SPEED = 5;
+const TANK_SPEED = 1;
 const TANK_SIZE = 64;
-const ROTATION_SPEED = 4;
+const ROTATION_SPEED = 1;
 const BULLET_TIMEOUT_MS = 500
 //Define variables for web server.
 const express = require('express');
@@ -184,7 +184,7 @@ class Bullet {
 
     if(!this.check() && !this.isDead){
       var that = this
-      setTimeout(function(){that.move()}, 50)
+      setTimeout(function(){that.move()}, 10)
     }
 
 
