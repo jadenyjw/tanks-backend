@@ -1,6 +1,6 @@
 //Define constants for the game.
-const BULLET_SPEED = 3;
-const BOARD_WIDTH = 1200;
+const BULLET_SPEED = 4;
+const BOARD_WIDTH = 1600;
 const BOARD_LENGTH = 800;
 const TANK_SPEED = 1;
 const TANK_SIZE = 64;
