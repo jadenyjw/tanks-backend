@@ -31,11 +31,15 @@ function leaveTank(tankID)
 
   for(var x = 0, n = tanks[tankID].bullets.length; x < n; x++){
     tanks[tankID].bullets[x].isDead = true;
+
   }
 
   tanks.splice(tankID, 1);
   for(var x = tankID, n = tanks.length; x < n; x++){
     tanks[x].id = x;
+    for(var y = 0, t = tanks[x].bullets.length; y < t; y++){
+      tanks[x].bullets[y].id = x;
+    }
   }
 }
 
