@@ -227,19 +227,27 @@ wss.on('connection', function connection(ws, req) {
   });
 
   ws.on('message', function process(data) {
-    var tank = tanks[connections.indexOf(ws)];
 
-    //Tank Shoot
-    if(data[0] == 0){
-      tank.shoot();
+    try{
+      var tank = tanks[connections.indexOf(ws)];
+
+      data = JSON.parse(data);
+      //Tank Shoot
+      if(data[0] == 0){
+        tank.shoot();
+      }
+      //Tank Move
+      else if(data[0] == 1){
+        tank.move(data[1]);
+      }
+      else if (data[0] == 2){
+        tank.rotate(data[1]);
+      }
     }
-    //Tank Move
-    else if(data[0] == 1){
-      tank.move(data[2]);
+    catch (e){
+
     }
-    else if (data[0] == 2){
-      tank.rotate(data[2]);
-    }
+
 
   });
 
