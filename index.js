@@ -141,6 +141,7 @@ class Bullet {
               connections[x].send(JSON.stringify([1, [tanks[i].id, tanks[i].x, tanks[i].y]]));
               connections[x].send(JSON.stringify([2, [tanks[i].id, tanks[i].angle]]));
               connections[x].send(JSON.stringify([7, [this.tankID, this.id]]));
+              connections[x].send(JSON.stringify([7, [this.tankID, tanks[i].id]]));
             }
           }
           //Check if the shooting tank still exists.
