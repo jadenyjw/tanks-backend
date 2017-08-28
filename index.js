@@ -1,10 +1,10 @@
 //Define constants for the game.
-const BULLET_SPEED = 4;
+const BULLET_SPEED = 8;
 const BOARD_WIDTH = 1600;
 const BOARD_LENGTH = 800;
-const TANK_SPEED = 1;
+const TANK_SPEED = 2;
 const TANK_SIZE = 64;
-const ROTATION_SPEED = 1;
+const ROTATION_SPEED = 2;
 const BULLET_TIMEOUT_MS = 500
 //Define variables for web server.
 const express = require('express');
