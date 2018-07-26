@@ -17,8 +17,8 @@
   },
   "homepage": "https://github.com/jadenyjw/tanks-backend#readme",
   "dependencies": {
-    "express": "^4.15.3",
-    "konva": "^1.6.7",
-    "ws": "^3.1.0"
+    "express": "^4.16.3",
+    "konva": "^1.7.6",
+    "ws": "^3.3.3"
   }
 }
